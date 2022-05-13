@@ -143,7 +143,14 @@ function App() {
       <form className='flex justify-center items-center px-8 mb-5' onSubmit={updateBeanzBackground}>
         <label className='flex w-80 py-3 focus:border-red-300 focus-within:border-b-black border-b relative border-opacity-10 items-center border-black'>
           <img className="w-7 h-7 mr-2 " alt="Magnify glass" src="/images/magnify-glass.png" />
-          <input className='h-full text-sm w-full z-10 focus:outline-none active:outline-none border-0 border-none bg-transparent text-black' type="number" value={beanzId} onChange={(e) => beanzIdInput(e)}/>
+          <input 
+            className='h-full text-sm w-full z-10 focus:outline-none active:outline-none border-0 border-none bg-transparent text-black'
+            type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={beanzId}
+            onChange={(e) => beanzIdInput(e)}
+          />
         </label>
         <button className="flex relative text-xs ml-5 hover:opacity-60 duration-300 py-4 px-6 rounded bg-gray-200" type="submit">BEANZ!</button>
       </form>

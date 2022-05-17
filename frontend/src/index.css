@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.opacity-base {
+  transition: opacity 1.5s linear;
+}
+
+.full-opacity {
+  opacity: 1;
+}
+
+.loading {
+  animation: pulsate 2s infinite;
+}
+
+@keyframes pulsate {
+  from { opacity: 75%; }
+  50% { opacity: 20%; }
+  to { opacity: 75%; }
+}

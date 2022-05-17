@@ -1,23 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
-import { rgbToHex, sampleColor } from './util/ImageUtil';
+import NavigationBar from './components/NavigationBar';
+import { WallpaperState } from './enum/WallpaperState';
+import { fillCanvasWithClampedArray, fillCanvasWithHexColor } from './util/CanvasUtil';
+import { sampleColorFromImage } from './util/ImageUtil';
+import { ScreenSizes } from './util/ScreenSizes';
 
 function App() {
   // TODO: Use this to pair azuki and bean: https://azukiimagemaker.vercel.app/api/pairbeanz-prod?azukiId=7625&beanzId=3016
   const  beanzMax = 19950
-  const canvasWidth = 1170;
-  const canvasHeight = 2532;
+  const azukiMax = 10000
   const defaultBackground = "#dedede";
   const beanzLogoUrl = "./images/beanz-sticker.png";
-  const beanzBaseUrl = "https://ikzttp.mypinata.cloud/ipfs/QmTRuWHr7bpqscUWFmhXndzf5AdQqkekhqwgbyJCqKMHrL/";
+
+  const [beanzId, setBeanzId] = useState<string>(Math.floor((Math.random() * beanzMax)).toString());
+  const [azukiId, setAzukiId] = useState<string>(Math.floor((Math.random() * azukiMax)).toString());
 
   const imgRef = useRef<HTMLImageElement>(null)
+  const [wallpaperState, setWallpaperState] = useState<WallpaperState>(WallpaperState.BEANZ);
   const [loading, setLoading] = useState<boolean>(false);
-  const [beanzId, setBeanzId] = useState<string>(Math.floor((Math.random() * beanzMax)).toString());
+  const [resolution, setResolution] = useState<ScreenSizes>(ScreenSizes.IPHONE);
   const [beanzLogo, setBeanzLogo] = useState<HTMLImageElement | undefined>();
   const [beanzLogoLoaded, setBeanzLogoLoaded] = useState<boolean>(false);
 
   useEffect(() => {
+    setLoading(true);
     drawTemporaryCanvas();
 
     const image = new Image();
@@ -33,7 +40,7 @@ function App() {
     if (beanzLogoLoaded) {
       updateBeanzBackground(undefined);
     }
-  }, [beanzLogoLoaded]);
+  }, [beanzLogoLoaded, wallpaperState]);
 
   function beanzIdInput(e: React.ChangeEvent<HTMLInputElement>) {
     const eventInput = e.target.value
@@ -44,8 +51,25 @@ function App() {
     }
   }
 
+  function azukiIdInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const eventInput = e.target.value
+    const value = parseInt(e.target.value)
+
+    if (eventInput.length === 0 || (value >= 0 && value < azukiMax)) {
+      setAzukiId(eventInput)
+    }
+  }
+
+  function getBeanzUrl(): string {
+    return `https://azkimg.imgix.net/images/final-${beanzId}.png`;
+  }
+
   function getSelfieModeUrl(id: string): string {
-    return `https://azkimg.imgix.net/images_squareface/final-${id}.png?fm=jpg&w=800`
+    return `https://azkimg.imgix.net/images_squareface/final-${id}.png?fm=jpg&w=800`;
+  }
+
+  function getPairModeUrl(): string {
+    return `https://api.heyskylark.xyz/pair?azukiId=${azukiId}&beanzId=${beanzId}`;
   }
 
   function drawTemporaryCanvas(): void {
@@ -54,12 +78,10 @@ function App() {
     const context = canvas?.getContext('2d');
 
     if (img && canvas && context) {
-      context.canvas.width = canvasWidth;
-      context.canvas.height = canvasHeight;
+      context.canvas.width = resolution.width;
+      context.canvas.height = resolution.height;
 
-      context.clearRect(0, 0, canvasWidth, canvasHeight);
-      context.fillStyle = defaultBackground;
-      context.fillRect(0, 0, canvasWidth, canvasHeight);
+      fillCanvasWithHexColor(resolution.height, resolution.width, context, defaultBackground);
 
       const dataUrl = canvas.toDataURL();
       img.src = dataUrl;
@@ -70,7 +92,14 @@ function App() {
     event?.preventDefault();
     setLoading(true)
 
-    const imageUrl = `${beanzBaseUrl}${beanzId}.png`;
+    var imageUrl;
+    if (wallpaperState === WallpaperState.BEANZ) {
+      imageUrl = getBeanzUrl();
+    } else {
+      imageUrl = getPairModeUrl();
+      console.log(imageUrl)
+    }
+
     const image = new Image();
     image.crossOrigin = "anonymous";
     image.src = imageUrl;
@@ -79,8 +108,10 @@ function App() {
       const canvas = document.createElement("canvas");
       canvas.width = image.width;
       canvas.height = image.height;
-      const backgroundColor = sampleColor(canvas, image)?.data
+      const backgroundColor = sampleColorFromImage(canvas, image)?.data
       
+
+      // TODO: Make a default color as to not rely on null check
       if (backgroundColor) {
         drawBeanzCanvasToImage(image, backgroundColor);
       }
@@ -92,17 +123,13 @@ function App() {
     const img = imgRef.current
     const context = canvas?.getContext('2d');
     if (img && canvas && context && beanzLogo) {
-      context.canvas.width = canvasWidth;
-      context.canvas.height = canvasHeight;
+      context.canvas.width = resolution.width;
+      context.canvas.height = resolution.height;
 
-      context.clearRect(0, 0, canvasWidth, canvasHeight);
-      context.fillStyle = rgbToHex(fillColor);
-      context.fillRect(0, 0, canvasWidth, canvasHeight);
-
+      fillCanvasWithClampedArray(resolution.width, resolution.height, context, fillColor);
       renderBean(beanzImage, fillColor, context);
+      renderBeanzLogo(context);
 
-      const logoCenter = (canvasWidth / 2) - (beanzLogo.width / 2);
-      context.drawImage(beanzLogo, logoCenter, 75, beanzLogo.width, beanzLogo.height);
       const dataUrl = canvas.toDataURL();
       img.src = dataUrl;
     }
@@ -110,13 +137,24 @@ function App() {
     setLoading(false);
   }
 
+  function renderBeanzLogo(context: CanvasRenderingContext2D) {
+    if (beanzLogo) {
+      const logoWidth = beanzLogo.width * .9;
+      const logoHeight = beanzLogo.height * .9;
+      const logoCenter = (resolution.width / 2) - (logoWidth / 2);
+      context.drawImage(beanzLogo, logoCenter, 1000, logoWidth, logoHeight);
+    } else {
+      console.log("Beanz logo not finished loading yet.")
+    }
+  }
+
   function renderBean(beanzImage: HTMLImageElement, fillColor: Uint8ClampedArray, context: CanvasRenderingContext2D) {
-    const beanzWidth = beanzImage.width * .7;
-    const beanzHeight = beanzImage.height * .7;
+    const beanzWidth = beanzImage.width * .55;
+    const beanzHeight = beanzImage.height * .55;
 
     const beanzCenterOffset = findBeanzCenterOffset(beanzImage, fillColor);
-    const beanzCanvasCenter = (canvasWidth / 2) - (beanzWidth / 2) + beanzCenterOffset;
-    const beanzCanvasHeight = canvasHeight - beanzHeight;
+    const beanzCanvasCenter = ((resolution.width / 2) - (beanzWidth / 2)) + beanzCenterOffset;
+    const beanzCanvasHeight = resolution.height - beanzHeight;
     context.drawImage(beanzImage, beanzCanvasCenter, beanzCanvasHeight, beanzWidth, beanzHeight);
   }
 
@@ -139,24 +177,23 @@ function App() {
 
   return (
     <div className='container mx-auto'>
-      <img className="h-7 p-2 rounded bg-azukired my-4 ml-6" alt="Azuki Logo" src="/images/azuki-logo.svg" />
-      <form className='flex justify-center items-center px-8 mb-5' onSubmit={updateBeanzBackground}>
-        <label className='flex w-80 py-3 focus:border-red-300 focus-within:border-b-black border-b relative border-opacity-10 items-center border-black'>
-          <img className="w-7 h-7 mr-2 " alt="Magnify glass" src="/images/magnify-glass.png" />
-          <input 
-            className='h-full text-base w-full z-10 focus:outline-none active:outline-none border-0 border-none bg-transparent text-black'
-            type="number"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={beanzId}
-            onChange={(e) => beanzIdInput(e)}
-          />
-        </label>
-        <button className="flex relative text-xs ml-5 hover:opacity-60 duration-300 py-4 px-6 rounded bg-gray-200" type="submit">BEANZ!</button>
-      </form>
+      <NavigationBar 
+        beanzId={beanzId}
+        azukiId={azukiId}
+        wallpaperState={wallpaperState}
+        setWallpaperState={setWallpaperState}
+        updateBeanzBackground={updateBeanzBackground}
+        beanzIdInput={beanzIdInput}
+        azukiIdInput={azukiIdInput}
+      />
 
-      <div className={`flex justify-center p-4 md:p-0 opacity-base ${loading ? "loading" : ""}`}>
-        <img className='beanzCanvas rounded-2xl' alt="Azuki Beanz" ref={imgRef}/>
+      <div className={`flex justify-center opacity-base ${loading ? "loading" : "full-opacity"}`}>
+        <img
+          style={{width: resolution.width / 3, height: resolution.height / 3}}
+          className='beanzCanvas rounded-2xl'
+          alt="Azuki Beanz"
+          ref={imgRef}
+        />
       </div>
     </div>
   );

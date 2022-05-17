@@ -187,7 +187,7 @@ function App() {
         azukiIdInput={azukiIdInput}
       />
 
-      <div className={`flex justify-center opacity-base ${loading ? "loading" : "full-opacity"}`}>
+      <div className={`flex justify-center px-4 pb-4 opacity-base ${loading ? "loading" : "full-opacity"}`}>
         <img
           style={{width: resolution.width / 3, height: resolution.height / 3}}
           className='beanzCanvas rounded-2xl'

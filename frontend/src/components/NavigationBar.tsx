@@ -1,3 +1,4 @@
+import { LogoState } from "../enum/LogoState";
 import { WallpaperState } from "../enum/WallpaperState";
 
 interface Props {
@@ -5,6 +6,8 @@ interface Props {
 	azukiId: string,
 	wallpaperState: WallpaperState
 	setWallpaperState: (wallpaperState: WallpaperState) => void
+	logoState: LogoState
+	setLogoState: (logoState: LogoState) => void
 	updateBeanzBackground: (event: React.FormEvent<HTMLFormElement> | undefined) => void
 	beanzIdInput: (e: React.ChangeEvent<HTMLInputElement>) => void
 	azukiIdInput: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -29,12 +32,26 @@ function NavigationBar(props: Props) {
 		}
 	}
 
-	function pairsForm() {
-
-	}
-
-	function beanzForm() {
-
+	function logoButtonEvent(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+		const buttonId = (event.target as HTMLButtonElement).id
+		switch(buttonId) {
+			case "beanzLogo": {
+				props.setLogoState(LogoState.BEANZ);
+				break;
+			}
+			case "bothLogo": {
+				props.setLogoState(LogoState.BOTH);
+				break;
+			}
+			case "azukiLogo": {
+				props.setLogoState(LogoState.AZUKI);
+				break;
+			}
+			default: {
+				console.log("Invalid ID");
+				break;
+			}
+		}
 	}
 
 	function renderForm() {
@@ -82,7 +99,7 @@ function NavigationBar(props: Props) {
 			{renderForm()}
 			
 			<div className="flex mx-8 pb-3 mb-3 border-b border-opacity-10 border-black bg-white">
-				<div className="w-5/12 -ml-2 lg:ml-0 px-2 py-0 sm:px-0">
+				<div className="w-5/12 -ml-2 md:mr-8 md:ml-0 px-2 py-0 sm:px-0">
 					<div className="flex p-1 space-x-1 duration-300 bg-gray-200 lg:rounded-xl rounded">
 						<button
 							id="Beanz"
@@ -100,12 +117,37 @@ function NavigationBar(props: Props) {
 						</button>
 					</div>
 				</div>
-				<div className="flex items-center pb-0">
-					{/* <button className="flex hover:opacity-50">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="w-5 h-5">
-								<path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
-						</svg>
-					</button> */}
+				<div className="flex justify-end w-7/12">
+					<div className="w-full md:w-8/12 -ml-2 px-2 sm:px-0 py-0">
+						{/* <button className="flex hover:opacity-50">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="w-5 h-5">
+									<path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
+							</svg>
+						</button> */}
+						<div className="flex p-1 space-x-1 duration-300 bg-gray-200 lg:rounded-xl rounded justify-end">
+							<button
+								id="beanzLogo"
+								className={`w-full lg:py-1.5 sm:py-1 sm:px-1 lg:text-xl text-xs leading-5 font-extrabold text-black lg:rounded-lg rounded-sm focus:outline-none hover:bg-white/[0.5] duration-300 ${props.logoState === LogoState.BEANZ ? "bg-white" : ""}`}
+								onClick={logoButtonEvent}
+							>
+								BEANZ
+							</button>
+							<button
+								id="bothLogo"
+								className={`w-full lg:py-1.5 sm:py-1 sm:px-1 lg:text-xl text-xs leading-5 font-extrabold text-black lg:rounded-lg rounded-sm focus:outline-none hover:bg-white/[0.5] duration-300 ${props.logoState === LogoState.BOTH ? "bg-white" : ""}`}
+								onClick={logoButtonEvent}
+							>
+								BOTH
+							</button>
+							<button
+								id="azukiLogo"
+								className={`w-full lg:py-1.5 sm:py-1 sm:px-1 lg:text-xl text-xs leading-5 font-extrabold text-black lg:rounded-lg rounded-sm focus:outline-none hover:bg-white/[0.5] duration-300 ${props.logoState === LogoState.AZUKI ? "bg-white" : ""}`}
+								onClick={logoButtonEvent}
+							>
+								IKZ!
+							</button>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

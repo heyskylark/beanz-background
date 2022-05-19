@@ -20,7 +20,11 @@ var corsOptions = {
 }
 
 app.get("/health", async function (req, res) {
-    res.status(200).send()
+    try {
+        res.status(200).send()
+    } catch (error) {
+        res.status(500).json({ message: "There was a problem." });
+    }
 });
 
 app.get('/pair', cors(corsOptions), async function (req, res) {
@@ -37,9 +41,11 @@ app.get('/pair', cors(corsOptions), async function (req, res) {
         return;
     } catch (error) {
         if (error.statusCode) {
-            res.status(error.statusCode).json({ message: error.message });
+            res.status(error.statusCode).json({
+                message: error.message ? error.message : "There was a problem."
+            });
         } else {
-            res.status(500).json({ message: error.message });
+            res.status(500).json({ message: "There was a problem." });
         }
     }
 });

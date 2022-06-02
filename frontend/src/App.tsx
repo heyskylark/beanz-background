@@ -9,6 +9,7 @@ import { isLightColor } from './util/ColorUtil';
 import { sampleColorFromImage } from './util/ImageUtil';
 import { ScreenSizes } from './util/ScreenSizes';
 import 'react-toastify/dist/ReactToastify.css';
+import Footer from './components/Footer';
 
 function App() {
 	// TODO: Use this to pair azuki and bean: https://azukiimagemaker.vercel.app/api/pairbeanz-prod?azukiId=7625&beanzId=3016
@@ -279,7 +280,7 @@ function App() {
 				azukiIdInput={azukiIdInput}
 			/>
 
-			<div className={`flex justify-center px-4 pb-4 opacity-base ${loading ? "loading" : "full-opacity"}`}>
+			<div className={`flex justify-center px-4 opacity-base ${loading ? "loading" : "full-opacity"}`}>
 				<img
 				style={{width: resolution.width / 3, height: resolution.height / 3}}
 				className='beanzCanvas rounded-2xl'
@@ -287,6 +288,8 @@ function App() {
 				ref={imgRef}
 				/>
 			</div>
+
+			<Footer />
 		</div>
 	);
 }

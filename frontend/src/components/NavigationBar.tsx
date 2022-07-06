@@ -25,6 +25,10 @@ function NavigationBar(props: Props) {
 				props.setWallpaperState(WallpaperState.PAIR);
 				break;
 			}
+			case "Azuki": {
+				props.setWallpaperState(WallpaperState.AZUKI);
+				break;
+			}
 			default: {
 				console.log("Invalid ID");
 				break;
@@ -55,33 +59,79 @@ function NavigationBar(props: Props) {
 	}
 
 	function renderForm() {
-		return (
-			<div>
-				<form className='flex justify-center items-center px-8 mb-5' onSubmit={props.updateBeanzBackground}>
-					<label className={`flex py-3 focus:border-red-300 focus-within:border-b-black border-b relative border-opacity-10 items-center border-black ${props.wallpaperState === WallpaperState.BEANZ ? "w-75 md:w-full" : "w-1/3 md:w-1/2 mr-4"}`}>
+		let input = <></>
+		switch(props.wallpaperState) {
+			case WallpaperState.BEANZ: {
+				input = (
+					<label className="flex py-3 focus:border-red-300 focus-within:border-b-black border-b relative border-opacity-10 items-center border-black w-75 md:w-full">
 						<img className="w-7 h-7 mr-2" alt="Magnify glass" src="/images/magnify-glass.png" />
 						<input 
 							className='h-full text-base w-full z-10 focus:outline-none active:outline-none border-0 border-none bg-transparent text-black'
 							type="number"
 							inputMode="numeric"
 							pattern="[0-9]*"
+							placeholder="Beanz Id..."
 							value={props.beanzId}
 							onChange={(e) => props.beanzIdInput(e)}
 						/>
 					</label>
-					{ props.wallpaperState === WallpaperState.PAIR
-						? <label className="flex md:w-1/2 w-1/3 py-3 focus:border-red-300 focus-within:border-b-black border-b relative border-opacity-10 items-center border-black">
-								<input 
-									className='h-full text-base w-full z-10 focus:outline-none active:outline-none border-0 border-none bg-transparent text-black'
-									type="number"
-									inputMode="numeric"
-									pattern="[0-9]*"
-									value={props.azukiId}
-									onChange={(e) => props.azukiIdInput(e)}
-								/>
-							</label>
-						: <></>
-					}
+				);
+				break;
+			}
+			case WallpaperState.PAIR: {
+				input = (
+					<>
+					<label className="flex py-3 focus:border-red-300 focus-within:border-b-black border-b relative border-opacity-10 items-center border-black w-1/3 md:w-1/2 mr-4">
+						<img className="w-7 h-7 mr-2" alt="Magnify glass" src="/images/magnify-glass.png" />
+						<input 
+							className='h-full text-base w-full z-10 focus:outline-none active:outline-none border-0 border-none bg-transparent text-black'
+							type="number"
+							inputMode="numeric"
+							pattern="[0-9]*"
+							placeholder="Beanz Id..."
+							value={props.beanzId}
+							onChange={(e) => props.beanzIdInput(e)}
+						/>
+					</label>
+					<label className="flex md:w-1/2 w-1/3 py-3 focus:border-red-300 focus-within:border-b-black border-b relative border-opacity-10 items-center border-black">
+						<input 
+							className='h-full text-base w-full z-10 focus:outline-none active:outline-none border-0 border-none bg-transparent text-black'
+							type="number"
+							inputMode="numeric"
+							pattern="[0-9]*"
+							placeholder="Azuki Id..."
+							value={props.azukiId}
+							onChange={(e) => props.azukiIdInput(e)}
+						/>
+					</label>
+					</>
+				);
+				break;
+			}
+			case WallpaperState.AZUKI: {
+				input = (
+					<label className="flex py-3 focus:border-red-300 focus-within:border-b-black border-b relative border-opacity-10 items-center border-black w-75 md:w-full">
+						<img className="w-7 h-7 mr-2" alt="Magnify glass" src="/images/magnify-glass.png" />
+						<input 
+							className='h-full text-base w-full z-10 focus:outline-none active:outline-none border-0 border-none bg-transparent text-black'
+							type="number"
+							inputMode="numeric"
+							pattern="[0-9]*"
+							placeholder="Azuki Id..."
+							value={props.azukiId}
+							onChange={(e) => props.azukiIdInput(e)}
+						/>
+					</label>
+				);
+				break;
+			}
+			default: input = <></>
+		}
+
+		return (
+			<div>
+				<form className='flex justify-center items-center px-8 mb-5' onSubmit={props.updateBeanzBackground}>
+					{input}
 					<button className="flex relative text-xs ml-5 hover:opacity-60 duration-300 py-4 px-6 rounded bg-gray-200" type="submit">
 						{props.wallpaperState === WallpaperState.BEANZ ? "BEANZ!" : "PAIRZ!"}
 					</button>
@@ -99,7 +149,7 @@ function NavigationBar(props: Props) {
 			{renderForm()}
 			
 			<div className="flex mx-8 pb-3 mb-3 border-b border-opacity-10 border-black bg-white">
-				<div className="w-5/12 -ml-2 md:mr-8 md:ml-0 px-2 py-0 sm:px-0">
+				<div className="w-6/12 -ml-2 md:mr-8 md:ml-0 px-2 py-0 sm:px-0">
 					<div className="flex p-1 space-x-1 duration-300 bg-gray-200 lg:rounded-xl rounded">
 						<button
 							id="Beanz"
@@ -115,9 +165,16 @@ function NavigationBar(props: Props) {
 						>
 							PAIRZ
 						</button>
+						<button
+							id="Azuki"
+							className={`w-full lg:py-1.5 sm:py-1 sm:px-1 lg:text-xl text-xs leading-5 font-extrabold text-black lg:rounded-lg rounded-sm focus:outline-none hover:bg-white/[0.5] duration-300 ${props.wallpaperState === WallpaperState.AZUKI ? "bg-white" : ""}`}
+							onClick={wallpaperButtonEvent}
+						>
+							AZUKI
+						</button>
 					</div>
 				</div>
-				<div className="flex justify-end w-7/12">
+				<div className="flex justify-end w-6/12">
 					<div className="w-full md:w-8/12 -ml-2 px-2 sm:px-0 py-0">
 						{/* <button className="flex hover:opacity-50">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="w-5 h-5">

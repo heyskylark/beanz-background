@@ -1,4 +1,5 @@
 export enum WallpaperState {
 	BEANZ,
-	PAIR
+	PAIR,
+	AZUKI
 }

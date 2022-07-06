@@ -10,6 +10,7 @@ import { sampleColorFromImage } from './util/ImageUtil';
 import { ScreenSizes } from './util/ScreenSizes';
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from './components/Footer';
+import serialToImageNameJson from './util/serialToImageNameJson';
 
 function App() {
 	// TODO: Use this to pair azuki and bean: https://azukiimagemaker.vercel.app/api/pairbeanz-prod?azukiId=7625&beanzId=3016
@@ -76,8 +77,8 @@ function App() {
 		const eventInput = e.target.value
 		const value = parseInt(e.target.value)
 
-		if (eventInput.length === 0 || (value >= 0 && value < azukiMax)) {
-		setAzukiId(eventInput)
+		if (eventInput.length === 0 || (value >= 0 && (value < azukiMax || (wallpaperState === WallpaperState.AZUKI && value < azukiMax + 1)))) {
+			setAzukiId(eventInput)
 		}
 	}
 
@@ -88,6 +89,16 @@ function App() {
   	function getPairModeUrl(azukiId: string, beanzId: string): string {
 		return `https://api.heyskylark.xyz/pair?azukiId=${azukiId}&beanzId=${beanzId}`;
   	}
+
+	function getAzukiUrl(azukiId: string): string {
+		if (parseInt(azukiId) === azukiMax) {
+			return "/images/sire.jpg";
+		} else {
+			// @ts-ignore
+			const uuid = serialToImageNameJson[azukiId];
+			return `https://azk.imgix.net/images/${uuid}.png?fm=jpg&w=800`;
+		}
+	}
 
   	function getSelfieModeUrl(beanzId: string): string {
 		return `https://azkimg.imgix.net/images_squareface/final-${beanzId}.png?fm=jpg&w=800`;
@@ -116,8 +127,10 @@ function App() {
 		var imageUrl;
 		if (wallpaperState === WallpaperState.BEANZ) {
 			imageUrl = getBeanzUrl(beanzId);
-		} else {
+		} else if (wallpaperState === WallpaperState.PAIR) {
 			imageUrl = getPairModeUrl(azukiId, beanzId);
+		} else {
+			imageUrl = getAzukiUrl(azukiId);
 		}
 		
 		if (lastImage?.src === imageUrl) {
@@ -153,7 +166,7 @@ function App() {
 
 			image.onerror = function () {
 				var toastMessage = "There was a problem getting your Beanz image 😮‍💨";
-				if (wallpaperState === WallpaperState.PAIR) {
+				if (wallpaperState === WallpaperState.PAIR || wallpaperState === WallpaperState.AZUKI) {
 					toastMessage = "There was a problem getting your Azuki image 😮‍💨";
 				}
 
@@ -265,6 +278,14 @@ function App() {
 		return 0;
 	}
 
+	function wallpaperStateSetter(wallpaperState: WallpaperState): void {
+		if (wallpaperState !== WallpaperState.AZUKI && parseInt(azukiId) >= azukiMax) {
+			setAzukiId(`${azukiMax - 1}`);
+		}
+
+		setWallpaperState(wallpaperState);
+	}
+
 	return (
 		<div className='container mx-auto'>
 			<ToastContainer />
@@ -272,7 +293,7 @@ function App() {
 				beanzId={beanzId}
 				azukiId={azukiId}
 				wallpaperState={wallpaperState}
-				setWallpaperState={setWallpaperState}
+				setWallpaperState={wallpaperStateSetter}
 				logoState={logoState}
 				setLogoState={setLogoState}
 				updateBeanzBackground={updateBeanzBackground}

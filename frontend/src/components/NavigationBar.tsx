@@ -128,12 +128,19 @@ function NavigationBar(props: Props) {
 			default: input = <></>
 		}
 
+		let buttonText = "PAIRZ!"
+		if (props.wallpaperState === WallpaperState.BEANZ) {
+			buttonText = "BEANZ!"
+		} else if (props.wallpaperState === WallpaperState.AZUKI) {
+			buttonText = "IKZ!"
+		}
+
 		return (
 			<div>
 				<form className='flex justify-center items-center px-8 mb-5' onSubmit={props.updateBeanzBackground}>
 					{input}
 					<button className="flex relative text-xs ml-5 hover:opacity-60 duration-300 py-4 px-6 rounded bg-gray-200" type="submit">
-						{props.wallpaperState === WallpaperState.BEANZ ? "BEANZ!" : "PAIRZ!"}
+						{buttonText}
 					</button>
 				</form>
 			</div>

@@ -8,7 +8,7 @@ interface Props {
 	setWallpaperState: (wallpaperState: WallpaperState) => void
 	logoState: LogoState
 	setLogoState: (logoState: LogoState) => void
-	updateBeanzBackground: (event: React.FormEvent<HTMLFormElement> | undefined) => void
+	updateBeanzBackground: (event: React.FormEvent<HTMLFormElement> | undefined) => Promise<void>
 	beanzIdInput: (e: React.ChangeEvent<HTMLInputElement>) => void
 	azukiIdInput: (e: React.ChangeEvent<HTMLInputElement>) => void
 }

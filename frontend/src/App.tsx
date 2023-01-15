@@ -11,6 +11,7 @@ import { ScreenSizes } from './util/ScreenSizes';
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from './components/Footer';
 import serialToImageNameJson from './util/serialToImageNameJson';
+import axios from 'axios';
 
 function App() {
 	// TODO: Use this to pair azuki and bean: https://azukiimagemaker.vercel.app/api/pairbeanz-prod?azukiId=7625&beanzId=3016
@@ -29,6 +30,7 @@ function App() {
 
 	const [loading, setLoading] = useState<boolean>(false);
 	const [lastImage, setLastImage] = useState<HTMLImageElement | undefined>();
+	const [lastUrl, setLastUrl] = useState<string>('');
 	const [resolution, setResolution] = useState<ScreenSizes>(ScreenSizes.IPHONE);
 
 	const [beanzLogo, setBeanzLogo] = useState<HTMLImageElement | undefined>();
@@ -59,9 +61,13 @@ function App() {
 	}, [])
 
 	useEffect(() => {
-		if (beanzLogo && azukiLogo) {
-			updateBeanzBackground(undefined);
+		async function update() {
+			if (beanzLogo && azukiLogo) {
+				await updateBeanzBackground(undefined);
+			}
 		}
+
+		update();
 	}, [beanzLogo, azukiLogo, azukiLogoRed, wallpaperState, logoState]);
 
 	function beanzIdInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -82,13 +88,13 @@ function App() {
 		}
 	}
 
-  	function getBeanzUrl(beanzId: string): string {
+	function getBeanzUrl(beanzId: string): string {
 		return `https://azkimg.imgix.net/images/final-${beanzId}.png`;
-  	}
+	}
 
-  	function getPairModeUrl(azukiId: string, beanzId: string): string {
-		return `https://api.heyskylark.xyz/pair?azukiId=${azukiId}&beanzId=${beanzId}`;
-  	}
+	function getPairModeUrl(azukiId: string, beanzId: string): string {
+		return `https://5tsbt7xxr4.execute-api.us-west-2.amazonaws.com/dev/proxy?azukiId=${azukiId}&beanzId=${beanzId}`;
+	}
 
 	function getAzukiUrl(azukiId: string): string {
 		if (parseInt(azukiId) === azukiMax) {
@@ -120,17 +126,43 @@ function App() {
 		}
 	}
 
-	function updateBeanzBackground(event: React.FormEvent<HTMLFormElement> | undefined): void {
+	function b64ToBlog(b64Data: any, contentType: string = '', sliceSize: number = 512) {
+		const byteCharacters = atob(b64Data);
+		const byteArrays = [];
+		for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+			const slice = byteCharacters.slice(offset, offset + sliceSize);
+			const byteNumbers = new Array(slice.length);
+			for (let i = 0; i < slice.length; i++) {
+				byteNumbers[i] = slice.charCodeAt(i);
+			}
+			const byteArray = new Uint8Array(byteNumbers);
+			byteArrays.push(byteArray);
+		}
+		const blob = new Blob(byteArrays, { type: contentType });
+		return blob;
+	}
+
+	async function updateBeanzBackground(event: React.FormEvent<HTMLFormElement> | undefined): Promise<void> {
 		event?.preventDefault();
 		setLoading(true)
 
 		var imageUrl;
 		if (wallpaperState === WallpaperState.BEANZ) {
 			imageUrl = getBeanzUrl(beanzId);
+			setLastUrl(imageUrl);
 		} else if (wallpaperState === WallpaperState.PAIR) {
-			imageUrl = getPairModeUrl(azukiId, beanzId);
+			const tempUrl = getPairModeUrl(azukiId, beanzId);
+
+			if (lastUrl !== tempUrl || !lastImage) {
+				const base64Data = await axios.get(tempUrl);
+				imageUrl = URL.createObjectURL(b64ToBlog(base64Data.data, 'image/png'));
+				setLastUrl(tempUrl);
+			} else {
+				imageUrl = lastImage.src
+			}
 		} else {
 			imageUrl = getAzukiUrl(azukiId);
+			setLastUrl(imageUrl);
 		}
 		
 		if (lastImage?.src === imageUrl) {
